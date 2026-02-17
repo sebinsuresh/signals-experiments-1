@@ -72,3 +72,44 @@ test("computed1 does not allow set", () => {
 
     return output;
 });
+
+test("computed signals that depend on other computed signals are updated correctly", () => {
+    let output = "";
+
+    const signal1 = signal(1);
+    output += `signal1: ${signal1()}`;
+
+    const computed1 = computed(() => {
+        return signal1() + 1;
+    });
+    output += `\ncomputed1 (signal1 + 1): ${computed1()}`;
+
+    const computed2 = computed(() => {
+        return computed1() + 1;
+    });
+    output += `\ncomputed2 (computed1 + 1): ${computed2()}`;
+
+    const computed3 = computed(() => {
+        return computed1() + computed2();
+    });
+    output += `\ncomputed3 (computed1 + computed2): ${computed3()}`;
+
+    output += `\n(updating signal1 to 2..)`;
+    signal1.set(2);
+    output += `\nsignal1: ${signal1()}`;
+    output += `\ncomputed1 (signal1 + 1): ${computed1()}`;
+    output += `\ncomputed2 (computed1 + 1): ${computed2()}`;
+    output += `\ncomputed3 (computed1 + computed2): ${computed3()}`;
+    if (
+        computed1() !== 3 ||
+        computed2() !== 4 ||
+        computed3() !== 7
+    ) {
+        throw new Error("Computed value not set to expected value. Output:\n" + output);
+    }
+
+    return output;
+});
+
+// TODO: solve issue with extra computation in above test -
+// add backlinks to signals on init, mark signals dirty, traverse graph, and make minimal changes.

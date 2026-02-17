@@ -56,6 +56,12 @@ export const computed = (callback) => {
     activeComputedStack.pop();
 
     const toReturn = () => {
+        if (activeComputedStack.length) {
+            const activeComputed = activeComputedStack[activeComputedStack.length - 1];
+            assertValidComputed(activeComputed)
+            computedObj.subscribers.add(activeComputed);
+        }
+
         return computedObj.value;
     };
     toReturn.set = () => {
